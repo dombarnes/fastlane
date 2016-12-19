@@ -65,7 +65,11 @@ module Fastlane
 
         UI.user_error!("Symbols on path '#{File.expand_path(dsym_filename)}' not found") if dsym_filename && !File.exist?(dsym_filename)
 
-        UI.success('Starting with ipa upload to HockeyApp... this could take some time.')
+        if options[:upload_dsym_only]
+          UI.success('Starting with dSYM upload to HockeyApp... this could take some time.')
+        else
+          UI.success('Starting with ipa upload to HockeyApp... this could take some time.')
+        end
 
         values = options.values
         values[:dsym_filename] = dsym_filename
@@ -178,7 +182,7 @@ module Fastlane
                                       optional: true),
           FastlaneCore::ConfigItem.new(key: :public_identifier,
                                       env_name: "FL_HOCKEY_PUBLIC_IDENTIFIER",
-                                      description: "Public identifier of the app you are targeting, usually you won't need this value",
+                                      description: "App id of the app you are targeting, usually you won't need this value. Required, if `upload_dsm_only` set to `true`",
                                       optional: true),
           FastlaneCore::ConfigItem.new(key: :commit_sha,
                                       env_name: "FL_HOCKEY_COMMIT_SHA",

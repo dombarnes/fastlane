@@ -18,7 +18,11 @@ module Fastlane
           print_slow_fastlane_warning
         end
 
+        ARGV.unshift("spaceship") if ARGV.first == "spaceauth"
         tool_name = ARGV.first ? ARGV.first.downcase : nil
+
+        tool_name = process_emojis(tool_name)
+
         if tool_name && Fastlane::TOOLS.include?(tool_name.to_sym) && !available_lanes.include?(tool_name.to_sym)
           # Triggering a specific tool
           # This happens when the users uses things like
@@ -45,11 +49,24 @@ module Fastlane
             # When we launch this feature, this should never be the case
             abort("#{tool_name} can't be called via `fastlane #{tool_name}`, run '#{tool_name}' directly instead".red)
           end
+        elsif tool_name == "fastlane-credentials"
+          require 'credentials_manager'
+          ARGV.shift
+          CredentialsManager::CLI.new.run
         else
           # Triggering fastlane to call a lane
           require "fastlane/commands_generator"
           Fastlane::CommandsGenerator.start
         end
+      end
+
+      # Since fastlane also supports the rocket and biceps emoji as executable
+      # we need to map those to the appropriate tools
+      def process_emojis(tool_name)
+        return {
+          "🚀" => "fastlane",
+          "💪" => "gym"
+        }[tool_name] || tool_name
       end
 
       def print_slow_fastlane_warning
